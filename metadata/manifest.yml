@@ -16,7 +16,6 @@ Categories:
 - service
 - javascript
 - phantomjs
-- web_framework
 Provides:
 - phantomjs-1.98
 - phantomjs
@@ -24,18 +23,3 @@ Source-Url: https://github.com/openshiftwar/openshift-cartridge-phantomjs.git
 Scaling:
   Min: 1
   Max: -1
-Endpoints:
-- Private-IP-Name: IP
-  Private-Port-Name: PORT
-  Private-Port: 15002
-  Public-Port-Name: PROXY_PORT
-  Protocols:
-  - http
-  - ws
-  Options:
-    primary: true
-  Mappings:
-  - Frontend: ''
-    Backend: ''
-    Options:
-      websocket: true
