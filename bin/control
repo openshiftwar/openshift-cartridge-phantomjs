@@ -1,0 +1,128 @@
+#!/bin/bash
+
+STOPTIMEOUT=10
+FMT="%a %b %d %Y %H:%M:%S GMT%z (%Z)"
+
+function is_phantomjs_service_running() {
+    if [ -f phantomjs.pid ]; then
+        phantomjs_pid=$( cat $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid 2> /dev/null )
+        if `ps --pid $phantomjs_pid 2>&1`; then
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+function status() {
+    if is_phantomjs_service_running; then
+        client_result "Application is running"
+    else
+        client_result "Application is not running"
+    fi
+}
+
+
+function start() {
+    logf="$OPENSHIFT_PHANTOMJS_LOG_DIR/phantomjs.log"
+    {
+        if [ -f "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" ]; then
+            echo "`date +"$FMT"`: Starting application '$OPENSHIFT_APP_NAME' from $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs..."
+            phantomjs_app=$OPENSHIFT_REPO_DIR/server.js
+            nohup "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" --webdriver=$OPENSHIFT_PHANTOMJS_IP:$OPENSHIFT_PHANTOMJS_PORT >> $logf 2>&1 &
+
+            ret=$?
+            npid=$!
+            if [ $ret -eq 0 ]; then
+                echo "$npid" > "$OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid"
+            else
+                echo "Application '$OPENSHIFT_APP_NAME' failed to start - $ret" 1>&2
+                exit $ret
+            fi
+        else
+            echo "WARN: Could not find the compiled application $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs, will not start"
+        fi
+    } >> $logf
+}
+
+function stop() {
+    if [ -f phantomjs.pid ]; then
+        phantomjs_pid=$( cat $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid 2> /dev/null )
+    fi
+
+    if [ -n "$phantomjs_pid" ]; then
+        logf="$OPENSHIFT_PHANTOMJS_DIR/phantomjs.log"
+        echo "`date +"$FMT"`: Stopping application '$OPENSHIFT_APP_NAME' ..." >> $logf
+        /bin/kill $phantomjs_pid
+        ret=$?
+        if [ $ret -eq 0 ]; then
+            TIMEOUT="$STOPTIMEOUT"
+            while [ $TIMEOUT -gt 0 ] && is_phantomjs_service_running ; do
+                /bin/kill -0 "$phantomjs_pid" >/dev/null 2>&1 || break
+                sleep 1
+                let TIMEOUT=${TIMEOUT}-1
+            done
+        fi
+
+        echo "`date +"$FMT"`: Stopped phantomjs application '$OPENSHIFT_APP_NAME'" >> $logf
+        rm -f $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid
+    else
+        echo "Warning: Application '$OPENSHIFT_APP_NAME' server exists without a pid file.  Use force-stop to kill." 1>&2
+    fi
+}
+
+function update() {
+    stop
+    ./.openshift/action_hooks/build
+}
+
+function restart() {
+    stop
+    start
+}
+
+function build() {
+    echo
+}
+
+function post-deploy() {
+    echo
+}
+
+function pre-build() {
+    echo
+}
+
+function tidy() {
+  client_message "Emptying log dir: $OPENSHIFT_phantomjs_LOG_DIR"
+  shopt -s dotglob
+  rm -rf logs/*
+  rm -rf tmp/*
+}
+
+#
+#  main():
+#
+
+# Ensure arguments.
+if ! [ $# -eq 1 ]; then
+    echo "Usage: $0 [start|restart|graceful|graceful-stop|stop|status]"
+    exit 1
+fi
+
+# Source utility functions.
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+# Handle commands.
+case "$1" in
+    start)               start       ;;
+    restart|graceful)    restart     ;;
+    graceful-stop|stop)  stop        ;;
+    status)              status      ;;
+    build)               build       ;;
+    pre-build)           pre-build   ;;
+    post-deploy)         post-deploy ;;
+    tidy)                tidy        ;;
+    update)              update      ;;
+    *) exit 0;
+esac
