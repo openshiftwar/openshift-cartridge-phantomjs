@@ -4,9 +4,9 @@ STOPTIMEOUT=10
 FMT="%a %b %d %Y %H:%M:%S GMT%z (%Z)"
 
 function is_phantomjs_service_running() {
-    if [ -f phantomjs.pid ]; then
+    if [ -f $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid ]; then
         phantomjs_pid=$( cat $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid 2> /dev/null )
-        if `ps --pid $phantomjs_pid 2>&1`; then
+        if [ `/bin/ps --pid $phantomjs_pid 2>&1 |wc -l` -gt 1 ]; then
             return 0
         fi
     fi
@@ -26,9 +26,9 @@ function status() {
 function start() {
     logf="$OPENSHIFT_PHANTOMJS_LOG_DIR/phantomjs.log"
     {
-        if [ -f "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" ]; then
-            echo "`date +"$FMT"`: Starting application '$OPENSHIFT_APP_NAME' from $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs..."
-            nohup "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" --webdriver=$OPENSHIFT_JBOSSEAP_IP:12001 >> $logf 2>&1 &
+        if [ -f "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/phantomjs" ]; then
+            echo "`date +"$FMT"`: Starting application '$OPENSHIFT_APP_NAME' from $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/phantomjs..."
+            nohup "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/phantomjs" --webdriver=$OPENSHIFT_JBOSSEAP_IP:12001 >> $logf 2>&1 &
 
             ret=$?
             npid=$!
@@ -39,13 +39,13 @@ function start() {
                 exit $ret
             fi
         else
-            echo "WARN: Could not find the compiled application $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs, will not start"
+            echo "WARN: Could not find the compiled application $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/phantomjs, will not start"
         fi
     } >> $logf
 }
 
 function stop() {
-    if [ -f phantomjs.pid ]; then
+    if [ -f $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid ]; then
         phantomjs_pid=$( cat $OPENSHIFT_PHANTOMJS_DIR/phantomjs.pid 2> /dev/null )
     fi
 
