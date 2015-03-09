@@ -1,11 +1,11 @@
 ---
 Name: phantomjs
 Cartridge-Short-Name: PHANTOMJS
-Display-Name: phantomjs 1.98
+Display-Name: phantomjs 2.0
 Description: PhantomJS is a headless WebKit scriptable with a JavaScript API.
   It has fast and native support for various web standards such as DOM handling,
   CSS selector, JSON, Canvas, and SVG
-Version: '1.98'
+Version: '2.0'
 License: BSD License
 License-Url: https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD
 Vendor: www.phantomjs.org
@@ -17,7 +17,6 @@ Categories:
 - javascript
 - phantomjs
 Provides:
-- phantomjs-1.98
 - phantomjs
 Source-Url: https://github.com/openshiftwar/openshift-cartridge-phantomjs.git
 Scaling:

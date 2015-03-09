@@ -13,9 +13,3 @@ locked_files:
 - etc/
 processed_templates:
 - '**/*.erb'
-setup_rewritten:
-- 'versions/**/*'
-dependency_dirs:
-- ~/.npm
-- node_modules
-- ~/.node_modules: node_modules

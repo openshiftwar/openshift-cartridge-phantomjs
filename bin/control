@@ -28,8 +28,7 @@ function start() {
     {
         if [ -f "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" ]; then
             echo "`date +"$FMT"`: Starting application '$OPENSHIFT_APP_NAME' from $OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs..."
-            phantomjs_app=$OPENSHIFT_REPO_DIR/server.js
-            nohup "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" --webdriver=$OPENSHIFT_PHANTOMJS_IP:$OPENSHIFT_PHANTOMJS_PORT >> $logf 2>&1 &
+            nohup "$OPENSHIFT_PHANTOMJS_DIR/versions/$PHANTOMJS_VERSION/bin/phantomjs" --webdriver=$OPENSHIFT_JBOSSEAP_IP:12001 >> $logf 2>&1 &
 
             ret=$?
             npid=$!
